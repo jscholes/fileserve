@@ -5,18 +5,18 @@
 
 import os.path
 
-from flask import Flask
+from flask import abort, Flask
 
 
 base_directory = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
-app.config.from_pyfile(os.path.join(base_directory, 'fileserve.cfg'))
+app.config.from_pyfile(os.path.join(base_directory, 'config.cfg'))
 
 
 @app.route('/')
 def index():
-    return abort(403)
+    abort(403)
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
