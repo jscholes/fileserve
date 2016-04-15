@@ -6,13 +6,12 @@
 import os
 import os.path
 
-from flask import abort, Flask
+from flask import abort, Flask, send_from_directory
 from flask.ext.sqlalchemy import SQLAlchemy
 
 
 base_directory = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
-app.use_x_sendfile = True
 
 # Load the default config file
 app.config.from_pyfile(os.path.join(base_directory, 'config.cfg'))
@@ -26,6 +25,9 @@ except RuntimeError:
 if not app.config.get('SQLALCHEMY_DATABASE_URI', None):
     # Last resort, use SQLite database for development
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{0}'.format(os.path.join(base_directory, 'fileserve.db'))
+
+if app.config.production:
+    app.use_x_sendfile = True
 
 db = SQLAlchemy(app)
 
@@ -60,7 +62,12 @@ class FileDownload(db.Model):
 
 @app.route('/file/<int:id>')
 def get_file(id):
-    return 'You requested file with ID {0}'.format(id)
+    file = File.query.filter_by(id=id).first()
+    if not file:
+        abort(404)
+    else:
+        directory, filename = os.path.split(file.path)
+        return send_from_directory(directory, filename, as_attachment=True)
 
 
 if __name__ == '__main__':
