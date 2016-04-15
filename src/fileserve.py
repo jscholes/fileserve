@@ -12,6 +12,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 
 base_directory = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
+app.use_x_sendfile = True
 
 # Load the default config file
 app.config.from_pyfile(os.path.join(base_directory, 'config.cfg'))
