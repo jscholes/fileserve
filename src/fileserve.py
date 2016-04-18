@@ -3,10 +3,11 @@
 # This program is free software, licensed under the terms of the GNU General Public License (version 3 or later).
 # See the file LICENSE for more details.
 
+import datetime
 import os
 import os.path
 
-from flask import abort, Flask, send_from_directory
+from flask import abort, Flask, request, send_from_directory
 from flask.ext.sqlalchemy import SQLAlchemy
 
 
@@ -64,6 +65,14 @@ class FileDownload(db.Model):
 @app.route('/file/<int:id>')
 def get_file(id):
     file = File.query.filter_by(id=id).first_or_404()
+
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+    user_agent = request.headers.get('User-Agent', 'Unknown-User-Agent/0.0')
+    download_time = datetime.datetime.now()
+    download = FileDownload(file_id=file.id, downloaded_at=download_time, ip_address=ip_address, user_agent=user_agent)
+    db.session.add(download)
+    db.session.commit()
+
     directory, filename = os.path.split(file.path)
     return send_from_directory(directory, filename, as_attachment=True)
 
