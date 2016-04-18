@@ -63,9 +63,6 @@ class FileDownload(db.Model):
 @app.route('/file/<int:id>')
 def get_file(id):
     file = File.query.filter_by(id=id).first_or_404()
-    # if not file:
-        # abort(404)
-    # else:
     directory, filename = os.path.split(file.path)
     return send_from_directory(directory, filename, as_attachment=True)
 
