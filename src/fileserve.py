@@ -65,15 +65,21 @@ class FileDownload(db.Model):
 @app.route('/file/<int:id>')
 def get_file(id):
     file = File.query.filter_by(id=id).first_or_404()
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+    user_agent = request.headers.get('User-Agent', 'Unknown-User-Agent/0.0')
+    download_time = datetime.datetime.now()
 
     # If we have a Referer or Range header, this is probably a multisegmented or resumed download
-    has_referer = request.headers.get('Referer', None) is not None
-    has_range = request.range is not None
+    should_count = request.headers.get('Referer') is None and request.range is None
 
-    if not has_referer and not has_range:
-        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-        user_agent = request.headers.get('User-Agent', 'Unknown-User-Agent/0.0')
-        download_time = datetime.datetime.now()
+    # Check for ignored user agents
+    if should_count:
+        for agent in app.config.get('IGNORED_USER_AGENTS'):
+            if agent in user_agent:
+                should_count = False
+                break
+
+    if should_count:
         download = FileDownload(file_id=file.id, downloaded_at=download_time, ip_address=ip_address, user_agent=user_agent)
         db.session.add(download)
         db.session.commit()
