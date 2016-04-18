@@ -73,16 +73,14 @@ def get_file(id):
     should_count = request.headers.get('Referer') is None and request.range is None
 
     # Check for ignored user agents
-    if should_count:
-        for agent in app.config.get('IGNORED_USER_AGENTS'):
-            if agent in user_agent:
-                should_count = False
-                break
+    should_count = not any(agent in user_agent for agent in app.config.get('IGNORED_USER_AGENTS'))
 
     if should_count:
         download = FileDownload(file_id=file.id, downloaded_at=download_time, ip_address=ip_address, user_agent=user_agent)
         db.session.add(download)
         db.session.commit()
+    else:
+        print('Bot')
 
     directory, filename = os.path.split(file.path)
     return send_from_directory(directory, filename, as_attachment=True, attachment_filename=filename)
