@@ -66,15 +66,20 @@ class FileDownload(db.Model):
 def get_file(id):
     file = File.query.filter_by(id=id).first_or_404()
 
-    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-    user_agent = request.headers.get('User-Agent', 'Unknown-User-Agent/0.0')
-    download_time = datetime.datetime.now()
-    download = FileDownload(file_id=file.id, downloaded_at=download_time, ip_address=ip_address, user_agent=user_agent)
-    db.session.add(download)
-    db.session.commit()
+    # If we have a Referer or Range header, this is probably a multisegmented or resumed download
+    has_referer = request.headers.get('Referer', None) is not None
+    has_range = request.range is not None
+
+    if not has_referer and not has_range:
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        user_agent = request.headers.get('User-Agent', 'Unknown-User-Agent/0.0')
+        download_time = datetime.datetime.now()
+        download = FileDownload(file_id=file.id, downloaded_at=download_time, ip_address=ip_address, user_agent=user_agent)
+        db.session.add(download)
+        db.session.commit()
 
     directory, filename = os.path.split(file.path)
-    return send_from_directory(directory, filename, as_attachment=True)
+    return send_from_directory(directory, filename, as_attachment=True, attachment_filename=filename)
 
 
 if __name__ == '__main__':
