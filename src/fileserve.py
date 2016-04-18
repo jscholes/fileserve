@@ -26,7 +26,7 @@ if not app.config.get('SQLALCHEMY_DATABASE_URI', None):
     # Last resort, use SQLite database for development
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{0}'.format(os.path.join(base_directory, 'fileserve.db'))
 
-if app.config.production:
+if app.config.get('PRODUCTION'):
     app.use_x_sendfile = True
 
 db = SQLAlchemy(app)
@@ -62,12 +62,12 @@ class FileDownload(db.Model):
 
 @app.route('/file/<int:id>')
 def get_file(id):
-    file = File.query.filter_by(id=id).first()
-    if not file:
-        abort(404)
-    else:
-        directory, filename = os.path.split(file.path)
-        return send_from_directory(directory, filename, as_attachment=True)
+    file = File.query.filter_by(id=id).first_or_404()
+    # if not file:
+        # abort(404)
+    # else:
+    directory, filename = os.path.split(file.path)
+    return send_from_directory(directory, filename, as_attachment=True)
 
 
 if __name__ == '__main__':
