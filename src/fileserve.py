@@ -7,7 +7,7 @@ import datetime
 import os
 import os.path
 
-from flask import abort, Flask, request, send_from_directory
+from flask import abort, Flask, make_response, request, redirect, send_from_directory, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 
 
@@ -64,7 +64,7 @@ class FileDownload(db.Model):
 
 @app.route('/file/<int:id>')
 def get_file(id):
-    file = File.query.filter_by(id=id).first_or_404()
+    file = get_file(id)
     ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
     user_agent = request.headers.get('User-Agent', 'Unknown-User-Agent/0.0')
     download_time = datetime.datetime.now()
@@ -80,8 +80,20 @@ def get_file(id):
         db.session.add(download)
         db.session.commit()
 
+    response = make_response(redirect(url_for('download_file', id=id), 303))
+    return response
+
+
+@app.route('/download/<int:id>')
+def download_file(id):
+    file = get_file(id)
     directory, filename = os.path.split(file.path)
     return send_from_directory(directory, filename, as_attachment=True, attachment_filename=filename)
+
+
+def get_file(file_id):
+    file = File.query.filter_by(id=file_id).first_or_404()
+    return file
 
 
 if __name__ == '__main__':
