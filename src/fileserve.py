@@ -34,11 +34,6 @@ db = SQLAlchemy(app)
 db.create_all()
 
 
-@app.route('/')
-def index():
-    abort(403)
-
-
 # Models
 class File(db.Model):
     __tablename__ = 'files'
@@ -60,6 +55,11 @@ class FileDownload(db.Model):
 
     def __repr__(self):
         return '<FileDownload %d|%r|%r>' % (self.file_id, self.ip_address, self.downloaded_at)
+
+
+@app.route('/')
+def index():
+    abort(403)
 
 
 @app.route('/file/<int:id>')
