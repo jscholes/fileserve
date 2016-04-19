@@ -69,9 +69,6 @@ def get_file(id):
     user_agent = request.headers.get('User-Agent', 'Unknown-User-Agent/0.0')
     download_time = datetime.datetime.now()
 
-    # If we have a Referer or Range header, this is probably a multisegmented or resumed download
-    should_count = request.headers.get('Referer') is None and request.range is None
-
     # Check for ignored user agents
     should_count = not any(agent in user_agent for agent in app.config.get('IGNORED_USER_AGENTS'))
 
