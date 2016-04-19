@@ -79,8 +79,6 @@ def get_file(id):
         download = FileDownload(file_id=file.id, downloaded_at=download_time, ip_address=ip_address, user_agent=user_agent)
         db.session.add(download)
         db.session.commit()
-    else:
-        print('Bot')
 
     directory, filename = os.path.split(file.path)
     return send_from_directory(directory, filename, as_attachment=True, attachment_filename=filename)
