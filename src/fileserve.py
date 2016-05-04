@@ -8,7 +8,7 @@ import datetime
 import os
 import os.path
 
-from flask import abort, Flask, make_response, request, redirect, send_from_directory, url_for
+from flask import abort, Flask, request, redirect, send_from_directory, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
 
 
@@ -87,25 +87,20 @@ def get_file(id):
         db.session.add(download)
         db.session.commit()
 
-    response = make_response(redirect(url_for('download_file', id=id), 303))
-    response.set_cookie(get_token_cookie_name(file.id), download.get_token(), max_age=app.config.get('TOKEN_VALIDITY_PERIOD', 600))
-    return response
+    return redirect_to_endpoint('download_file', token=download.get_token(), id=id)
 
 
-@app.route('/download/<int:id>')
-def download_file(id):
+@app.route('/download/<token>/<int:id>')
+def download_file(token, id):
     valid_token = False
     file = get_file_info(id)
-    cookies = request.cookies
-    cookie_name = get_token_cookie_name(file.id)
-    if cookie_name in cookies:
-        valid_token = verify_download_token(file.id, cookies[cookie_name])
+    valid_token = verify_download_token(file.id, token)
 
     if valid_token:
         directory, filename = os.path.split(file.path)
         return send_from_directory(directory, filename, as_attachment=True, attachment_filename=filename)
     else:
-        abort(403)
+        return redirect_to_endpoint('get_file', id=id, invalid_token=1)
 
 
 def get_file_info(file_id):
@@ -121,11 +116,13 @@ def get_user_agent():
     return request.headers.get('User-Agent', 'Unknown-User-Agent/0.0')
 
 
-def get_token_cookie_name(file_id):
-    return 'download_token{0}'.format(file_id)
+def redirect_to_endpoint(endpoint, **kwargs):
+    return redirect(url_for(endpoint, **kwargs), 303)
 
 
 def verify_download_token(file_id, token):
+    if len(token) > 128:
+        return False
     token = urlsafe_b64decode(add_base64_padding(token)).decode('ascii', errors='ignore')
     try:
         token_file_id, timestamp, token_ip_address = token.split('|')
