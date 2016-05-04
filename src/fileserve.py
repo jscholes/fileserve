@@ -9,6 +9,7 @@ import os
 import os.path
 
 from flask import abort, Flask, request, redirect, send_from_directory, url_for
+from flask.ext.migrate import Migrate, MigrateCommand
 from flask.ext.script import Manager, Shell
 from flask.ext.sqlalchemy import SQLAlchemy
 
@@ -35,6 +36,8 @@ if app.config.get('PRODUCTION'):
 
 db = SQLAlchemy(app)
 db.create_all()
+migrate = Migrate(app, db)
+app_manager.add_command('db', MigrateCommand)
 
 
 # Models
