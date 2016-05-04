@@ -9,11 +9,13 @@ import os
 import os.path
 
 from flask import abort, Flask, request, redirect, send_from_directory, url_for
+from flask.ext.script import Manager, Shell
 from flask.ext.sqlalchemy import SQLAlchemy
 
 
 base_directory = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
+app_manager = Manager(app)
 
 # Load the default config file
 app.config.from_pyfile(os.path.join(base_directory, 'config.cfg'))
@@ -65,6 +67,11 @@ class FileDownload(db.Model):
         ])
         token = urlsafe_b64encode(token.encode('ascii', errors='ignore')).rstrip(b'=')
         return token
+
+
+def make_shell_context():
+    return dict(app=app, base_directory=base_directory, db=db, File=File, FileDownload=FileDownload)
+app_manager.add_command("shell", Shell(make_context=make_shell_context))
 
 
 @app.route('/')
@@ -149,4 +156,4 @@ def add_base64_padding(token):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app_manager.run()
