@@ -35,7 +35,6 @@ if app.config.get('PRODUCTION'):
     app.use_x_sendfile = True
 
 db = SQLAlchemy(app)
-db.create_all()
 migrate = Migrate(app, db)
 app_manager.add_command('db', MigrateCommand)
 
