@@ -10,20 +10,16 @@ from fileserve.app import base_directory, create_app, db
 from fileserve.models import File, FileDownload
 
 
-app = create_app()
-
-
 def make_shell_context():
     return dict(app=app, base_directory=base_directory, db=db, File=File, FileDownload=FileDownload)
 
 
-def main():
-    manager = Manager(app)
-    migrate = Migrate(app, db)
-    manager.add_command('db', MigrateCommand)
-    manager.add_command("shell", Shell(make_context=make_shell_context))
-    manager.run()
+app = create_app()
+manager = Manager(app)
+migrate = Migrate(app, db)
+manager.add_command('db', MigrateCommand)
+manager.add_command("shell", Shell(make_context=make_shell_context))
 
 
 if __name__ == '__main__':
-    main()
+    manager.run()
