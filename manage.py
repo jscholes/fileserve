@@ -7,11 +7,12 @@ import os.path
 import sys
 
 from flask.ext.migrate import Migrate, MigrateCommand
-from flask.ext.script import Manager, Shell
+from flask.ext.script import Manager, prompt_bool, Shell
 from flask.ext.script.commands import InvalidCommand
 
 from fileserve.app import base_directory, create_app, db
 from fileserve.models import File, FileDownload
+from fileserve.utils import get_file_info
 
 
 def make_shell_context():
@@ -37,9 +38,24 @@ def add_file(path):
     print('File added with ID: {0}'.format(new_file.id))
 
 
+@manager.command
+def remove_file(id):
+    file = get_file_info(id)
+    if file is None:
+        raise InvalidCommand('File with ID {0} does not exist'.format(id))
+
+    confirmation = prompt_bool('Are you sure you want to remove this file?\nPath: {0}\nID: {1}\n(y/n)'.format(file.path, file.id), default=False, yes_choices=['y'], no_choices='n')
+    if confirmation:
+        db.session.delete(file)
+        db.session.commit()
+        print('File removed')
+    else:
+        print('File not removed')
+
+
 if __name__ == '__main__':
     try:
         manager.run()
     except InvalidCommand as e:
-        print(e, file=sys.stderr)
+        print('Error: {0}'.format(e), file=sys.stderr)
         sys.exit(1)
