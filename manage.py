@@ -6,6 +6,7 @@
 import os.path
 import sys
 
+from flask import current_app, url_for
 from flask.ext.migrate import Migrate, MigrateCommand
 from flask.ext.script import Manager, prompt_bool, Shell
 from flask.ext.script.commands import InvalidCommand
@@ -36,15 +37,12 @@ def add_file(path):
     new_file = File(path=path)
     db.session.add(new_file)
     db.session.commit()
-    print('File added with ID: {0}'.format(new_file.id))
+    print('File added with ID: {0}\nDownload URL: {1}{2}'.format(new_file.id, current_app.config['BASE_URL'], url_for('get_file', id=new_file.id)))
 
 
 @manager.command
 def remove_file(id):
-    file = get_file_info(id)
-    if file is None:
-        raise InvalidCommand('File with ID {0} does not exist'.format(id))
-
+    file = get_file_or_raise(id)
     confirmation = prompt_bool('Are you sure you want to remove this file?\nPath: {0}\nID: {1}\n(y/n)'.format(file.path, file.id), default=False, yes_choices=['y'], no_choices='n')
     if confirmation:
         db.session.delete(file)
@@ -56,16 +54,21 @@ def remove_file(id):
 
 @manager.command
 def file_stats(id):
-    file = get_file_info(id)
-    if file is None:
-        raise InvalidCommand('File with ID {0} does not exist'.format(id))
-
+    file = get_file_or_raise(id)
     downloads = file.downloads.order_by(FileDownload.downloaded_at).all()
     print('File path: {0}\nID: {1}\nNumber of downloads: {2}'.format(file.path, file.id, len(downloads)))
     try:
         print('Last download: {0}'.format(downloads[-1].downloaded_at))
     except IndexError:
         pass
+
+
+def get_file_or_raise(id):
+    file = get_file_info(id)
+    if file is None:
+        raise InvalidCommand('File with ID {0} does not exist'.format(id))
+    else:
+        return file
 
 
 if __name__ == '__main__':
