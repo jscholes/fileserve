@@ -12,7 +12,7 @@ class File(db.Model):
     __tablename__ = 'files'
     id = db.Column(db.Integer, primary_key=True)
     path = db.Column(db.String, nullable=False)
-    downloads = db.relationship('FileDownload', backref='file', lazy='select')
+    downloads = db.relationship('FileDownload', backref='file', lazy='dynamic')
 
     def __repr__(self):
         return '<File %d|%r>' % (self.id, self.path)
