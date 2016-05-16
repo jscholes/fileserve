@@ -14,17 +14,14 @@ base_directory = os.path.abspath(os.path.dirname(__file__))
 db = SQLAlchemy()
 
 
-def create_app():
+def create_app(config_path=os.environ.get('FILESERVE_CONFIG_FILE', None)):
     app = Flask(__name__)
 
     # Load the default config file
     app.config.from_pyfile(os.path.join(base_directory, 'config.cfg'))
     # Then try to load a config file for use in production
-    try:
-        app.config.from_envvar('FILESERVE_CONFIG_FILE')
-    except RuntimeError:
-        # Use default/development values
-        pass
+    if config_path is not None:
+        app.config.from_pyfile(config_path)
 
     if not app.config.get('SQLALCHEMY_DATABASE_URI', None):
         # Last resort, use SQLite database for development
