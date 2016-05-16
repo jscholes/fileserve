@@ -14,7 +14,7 @@ from flask.ext.script.commands import InvalidCommand
 from fileserve import __version__
 from fileserve.app import base_directory, create_app, db
 from fileserve.models import File, FileDownload
-from fileserve.utils import get_file_info
+from fileserve.utils import get_file_model
 
 
 def make_shell_context():
@@ -64,7 +64,7 @@ def file_stats(id):
 
 
 def get_file_or_raise(id):
-    file = get_file_info(id)
+    file = get_file_model(id)
     if file is None:
         raise InvalidCommand('File with ID {0} does not exist'.format(id))
     else:

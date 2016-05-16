@@ -11,7 +11,7 @@ from flask import abort, current_app, send_from_directory
 
 from .app import db
 from .models import FileDownload
-from .utils import get_file_info, get_ip_address, get_user_agent, redirect_to_endpoint, verify_download_token
+from .utils import get_file_model, get_ip_address, get_user_agent, redirect_to_endpoint, verify_download_token
 
 
 def init_app(app):
@@ -30,7 +30,7 @@ def index():
 
 
 def get_file(id):
-    file = get_file_info(id)
+    file = get_file_model(id)
     if file is None:
         abort(404)
     ip_address = get_ip_address()
@@ -50,7 +50,7 @@ def get_file(id):
 
 def download_file(token, id):
     valid_token = False
-    file = get_file_info(id)
+    file = get_file_model(id)
     if file is None:
         abort(404)
     valid_token = verify_download_token(file.id, token)

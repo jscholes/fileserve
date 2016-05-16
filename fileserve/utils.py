@@ -11,8 +11,8 @@ from flask import current_app, request, redirect, url_for
 from .models import File
 
 
-def get_file_info(file_id):
-    file = File.query.filter_by(id=file_id).first()
+def get_file_model(id):
+    file = File.query.filter_by(id=id).first()
     return file
 
 
