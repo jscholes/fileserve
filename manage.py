@@ -10,6 +10,7 @@ from flask.ext.migrate import Migrate, MigrateCommand
 from flask.ext.script import Manager, prompt_bool, Shell
 from flask.ext.script.commands import InvalidCommand
 
+from fileserve import __version__
 from fileserve.app import base_directory, create_app, db
 from fileserve.models import File, FileDownload
 from fileserve.utils import get_file_info
@@ -23,7 +24,7 @@ app = create_app()
 manager = Manager(app)
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
-manager.add_command("shell", Shell(make_context=make_shell_context))
+manager.add_command("shell", Shell(banner='fileserve v{0} shell'.format(__version__), make_context=make_shell_context))
 
 
 @manager.command
