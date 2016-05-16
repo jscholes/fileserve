@@ -31,6 +31,8 @@ def index():
 
 def get_file(id):
     file = get_file_info(id)
+    if file is None:
+        abort(404)
     ip_address = get_ip_address()
     user_agent = get_user_agent()
     download_time = datetime.datetime.now()
@@ -49,6 +51,8 @@ def get_file(id):
 def download_file(token, id):
     valid_token = False
     file = get_file_info(id)
+    if file is None:
+        abort(404)
     valid_token = verify_download_token(file.id, token)
 
     if valid_token:
@@ -59,7 +63,7 @@ def download_file(token, id):
 
 
 def get_file_info(file_id):
-    file = File.query.filter_by(id=file_id).first_or_404()
+    file = File.query.filter_by(id=file_id).first()
     return file
 
 
