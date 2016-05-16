@@ -54,6 +54,20 @@ def remove_file(id):
         print('File not removed')
 
 
+@manager.command
+def file_stats(id):
+    file = get_file_info(id)
+    if file is None:
+        raise InvalidCommand('File with ID {0} does not exist'.format(id))
+
+    downloads = file.downloads.order_by(FileDownload.downloaded_at).all()
+    print('File path: {0}\nID: {1}\nNumber of downloads: {2}'.format(file.path, file.id, len(downloads)))
+    try:
+        print('Last download: {0}'.format(downloads[-1].downloaded_at))
+    except IndexError:
+        pass
+
+
 if __name__ == '__main__':
     try:
         manager.run()
