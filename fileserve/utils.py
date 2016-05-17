@@ -5,14 +5,23 @@
 
 from base64 import urlsafe_b64decode
 import datetime
+try:
+    from urllib import parse as urlparse
+except ImportError:
+    import urlparse
 
 from flask import current_app, request, redirect, url_for
 
 from .models import File
 
 
-def get_file_model(id):
+def get_file_model_from_id(id):
     file = File.query.filter_by(id=id).first()
+    return file
+
+
+def get_file_model_from_slug(slug):
+    file = File.query.filter_by(url_slug=urlparse.unquote(slug)).first()
     return file
 
 

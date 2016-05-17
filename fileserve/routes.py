@@ -11,14 +11,14 @@ from flask import abort, current_app, send_from_directory
 
 from .app import db
 from .models import FileDownload
-from .utils import get_file_model, get_ip_address, get_user_agent, redirect_to_endpoint, verify_download_token
+from .utils import get_file_model_from_slug, get_ip_address, get_user_agent, redirect_to_endpoint, verify_download_token
 
 
 def init_app(app):
     routes = [
         ('/', index),
-        ('/file/<int:id>', get_file),
-        ('/download/<token>/<int:id>', download_file),
+        ('/file/<slug>', get_file),
+        ('/download/<token>/<slug>', download_file),
     ]
 
     for url_rule, view_func in routes:
@@ -29,8 +29,8 @@ def index():
     abort(403)
 
 
-def get_file(id):
-    file = get_file_model(id)
+def get_file(slug):
+    file = get_file_model_from_slug(slug)
     if file is None:
         abort(404)
     ip_address = get_ip_address()
@@ -45,12 +45,12 @@ def get_file(id):
         db.session.add(download)
         db.session.commit()
 
-    return redirect_to_endpoint('download_file', token=download.get_token(), id=id)
+    return redirect_to_endpoint('download_file', token=download.get_token(), slug=slug)
 
 
-def download_file(token, id):
+def download_file(token, slug):
     valid_token = False
-    file = get_file_model(id)
+    file = get_file_model_from_slug(slug)
     if file is None:
         abort(404)
     valid_token = verify_download_token(file.id, token)
@@ -59,5 +59,5 @@ def download_file(token, id):
         directory, filename = os.path.split(file.path)
         return send_from_directory(directory, filename, as_attachment=True, attachment_filename=filename)
     else:
-        return redirect_to_endpoint('get_file', id=id, invalid_token=1)
+        return redirect_to_endpoint('get_file', slug=slug, invalid_token=1)
 

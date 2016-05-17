@@ -1,13 +1,13 @@
 """Initial database migration
 
-Revision ID: d8c435eafc13
+Revision ID: c7ca042014fe
 Revises: None
-Create Date: 2016-05-17 17:11:21.265609
+Create Date: 2016-05-17 17:59:52.502038
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'd8c435eafc13'
+revision = 'c7ca042014fe'
 down_revision = None
 
 from alembic import op
@@ -20,7 +20,8 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('path', sa.String(), nullable=False),
     sa.Column('url_slug', sa.String(length=255), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('url_slug')
     )
     op.create_table('fs_downloads',
     sa.Column('id', sa.Integer(), nullable=False),
