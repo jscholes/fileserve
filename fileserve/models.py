@@ -9,19 +9,19 @@ from .app import db
 
 
 class File(db.Model):
-    __tablename__ = 'files'
+    __tablename__ = 'fs_files'
     id = db.Column(db.Integer, primary_key=True)
     path = db.Column(db.String, nullable=False)
-    downloads = db.relationship('FileDownload', backref='file', lazy='dynamic')
+    downloads = db.relationship('FileDownload', backref='file', lazy='select')
 
     def __repr__(self):
         return '<File %d|%r>' % (self.id, self.path)
 
 
 class FileDownload(db.Model):
-    __tablename__ = 'downloads'
+    __tablename__ = 'fs_downloads'
     id = db.Column(db.Integer, primary_key=True)
-    file_id = db.Column(db.Integer, db.ForeignKey('files.id'))
+    file_id = db.Column(db.Integer, db.ForeignKey('fs_files.id'))
     downloaded_at = db.Column(db.DateTime, nullable=False)
     ip_address = db.Column(db.String(45), nullable=False)
     user_agent = db.Column(db.String, nullable=False)
