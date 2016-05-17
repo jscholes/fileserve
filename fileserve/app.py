@@ -29,6 +29,9 @@ def create_app(config_path=os.environ.get('FILESERVE_CONFIG_FILE', None)):
 
     if app.config.get('PRODUCTION'):
         app.use_x_sendfile = True
+        app.debug = False
+    else:
+        app.debug = True
 
     db.init_app(app)
     from . import routes
