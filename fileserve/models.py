@@ -12,6 +12,7 @@ class File(db.Model):
     __tablename__ = 'fs_files'
     id = db.Column(db.Integer, primary_key=True)
     path = db.Column(db.String, nullable=False)
+    url_slug = db.Column(db.String(255), nullable=False)
     downloads = db.relationship('FileDownload', backref='file', lazy='select')
 
     def __repr__(self):
