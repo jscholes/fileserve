@@ -26,7 +26,11 @@ def get_file_model_from_slug(slug):
 
 
 def get_ip_address():
-    return request.headers.get('X-Forwarded-For', request.remote_addr)
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if ip is None:
+        return '0.0.0.0'
+    else:
+        return ip
 
 
 def get_user_agent():
